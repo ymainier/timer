@@ -1,4 +1,4 @@
-import { useReducer, useCallback, useEffect } from "react";
+import { useEffect, useCallback, useReducer, useRef, RefObject } from "react";
 
 export type State =
   | {
@@ -19,6 +19,7 @@ export type State =
 const DEFAULT = Object.freeze({
   ROUND_DURATION: 180_000,
   REST_DURATION: 60_000,
+  ALARM_TIME: 30_000,
 });
 
 export const initialState: State = Object.freeze({
@@ -87,8 +88,70 @@ const formatTime = (timeInMs: number): string => {
   return `${minutes}:${seconds.toString().padStart(2, "0")}:${tenths}`;
 };
 
-export function useRoundTimer() {
+function computeTimeAndRound(state: State) {
+  const duration = state.duration ?? 0;
+  const durationModuloRoundPlusRest =
+    duration % (state.roundDuration + state.restDuration);
+  const isRound = durationModuloRoundPlusRest < state.roundDuration;
+
+  const time = isRound
+    ? state.roundDuration - durationModuloRoundPlusRest
+    : state.roundDuration + state.restDuration - durationModuloRoundPlusRest;
+
+  const currentRound =
+    Math.floor(duration / (state.roundDuration + state.restDuration)) + 1;
+
+  return { isRound, time, currentRound };
+}
+
+type Refs = {
+  bell: RefObject<HTMLAudioElement>;
+  knocks: RefObject<HTMLAudioElement>;
+  snap: RefObject<HTMLAudioElement>;
+};
+
+function useSounds(state: State, { bell, knocks }: Refs) {
+  const previousState = useRef(state);
+
+  const { isRound, time } = computeTimeAndRound(state);
+  const { isRound: previousIsRound, time: previousTime } = computeTimeAndRound(
+    previousState.current
+  );
+
+  if (
+    previousState.current.status === "stopped" &&
+    state.status === "started"
+  ) {
+    bell.current?.play();
+  }
+
+  if (
+    previousState.current.status === "started" &&
+    state.status === "started" &&
+    previousIsRound !== isRound
+  ) {
+    if (bell.current) {
+      bell.current.pause();
+      bell.current.currentTime = 0;
+      bell.current.play();
+    }
+  }
+
+  if (
+    previousState.current.status === "started" &&
+    state.status === "started" &&
+    previousTime > DEFAULT.ALARM_TIME &&
+    time <= DEFAULT.ALARM_TIME
+  ) {
+    knocks.current?.play();
+  }
+
+  previousState.current = state;
+}
+
+export function useRoundTimer(refs: Refs) {
   const [state, dispatch] = useReducer(reducer, initialState);
+  useSounds(state, refs);
 
   useEffect(() => {
     const interval = setInterval(() => {
@@ -114,30 +177,7 @@ export function useRoundTimer() {
     []
   );
 
-  if (state.status === "stopped") {
-    return {
-      time: formatTime(state.roundDuration),
-      isRound: true,
-      status: state.status,
-      currentRound: 1,
-      roundDuration: state.roundDuration,
-      restDuration: state.restDuration,
-      startTimer,
-      pauseTimer,
-      resetTimer,
-      updateSettings,
-    };
-  }
-
-  const durationModuloRoundPlusRest =
-    state.duration % (state.roundDuration + state.restDuration);
-  const isRound = durationModuloRoundPlusRest < state.roundDuration;
-  const time = isRound
-    ? state.roundDuration - durationModuloRoundPlusRest
-    : state.roundDuration + state.restDuration - durationModuloRoundPlusRest;
-
-  const currentRound =
-    Math.floor(state.duration / (state.roundDuration + state.restDuration)) + 1;
+  const { isRound, time, currentRound } = computeTimeAndRound(state);
 
   return {
     time: formatTime(time),

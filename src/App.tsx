@@ -1,9 +1,15 @@
-import React from "react";
+import React, { useRef } from "react";
 import { useRoundTimer } from "./hooks/useRoundTimer";
 import { Button } from "./components/ui/button";
 import { Settings } from "./components/Settings";
 
 function App() {
+  const refs = {
+    bell: useRef<HTMLAudioElement>(null),
+    knocks: useRef<HTMLAudioElement>(null),
+    snap: useRef<HTMLAudioElement>(null),
+  };
+
   const {
     time,
     isRound,
@@ -15,18 +21,22 @@ function App() {
     pauseTimer,
     resetTimer,
     updateSettings,
-  } = useRoundTimer();
+  } = useRoundTimer(refs);
 
   const [showSettings, setShowSettings] = React.useState(false);
 
   const getBackgroundColor = () => {
     switch (status) {
       case "paused":
-        return isRound ? "bg-gray-300 text-foreground" : "bg-gray-700 text-white";
+        return isRound
+          ? "bg-gray-300 text-foreground"
+          : "bg-gray-700 text-white";
       case "stopped":
         return "bg-background text-foreground";
       default:
-        return isRound ? "bg-background text-foreground" : "bg-black text-white";
+        return isRound
+          ? "bg-background text-foreground"
+          : "bg-black text-white";
     }
   };
 
@@ -76,6 +86,15 @@ function App() {
           onClose={() => setShowSettings(false)}
         />
       )}
+      <audio ref={refs.bell} preload="auto">
+        <source src="./bell.mp3" type="audio/mpeg" />
+      </audio>
+      <audio ref={refs.knocks} preload="auto">
+        <source src="./knocks.mp3" type="audio/mpeg" />
+      </audio>
+      <audio ref={refs.snap} preload="auto">
+        <source src="./snap.mp3" type="audio/mpeg" />
+      </audio>
     </div>
   );
 }
