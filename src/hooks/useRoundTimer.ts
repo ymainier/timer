@@ -7,6 +7,7 @@ export type State =
       lastTick: null;
       roundDuration: number;
       restDuration: number;
+      alarmTime: number;
     }
   | {
       status: "started" | "paused";
@@ -14,6 +15,7 @@ export type State =
       lastTick: number;
       roundDuration: number;
       restDuration: number;
+      alarmTime: number;
     };
 
 const DEFAULT = Object.freeze({
@@ -28,6 +30,7 @@ export const initialState: State = Object.freeze({
   lastTick: null,
   roundDuration: DEFAULT.ROUND_DURATION,
   restDuration: DEFAULT.REST_DURATION,
+  alarmTime: DEFAULT.ALARM_TIME,
 });
 
 type Action =
@@ -37,7 +40,11 @@ type Action =
   | { type: "TICK"; payload: number }
   | {
       type: "UPDATE";
-      payload: { roundDuration: number; restDuration: number };
+      payload: {
+        roundDuration: number;
+        restDuration: number;
+        alarmTime: number;
+      };
     };
 
 export function reducer(state: State, action: Action): State {
@@ -73,6 +80,7 @@ export function reducer(state: State, action: Action): State {
         lastTick: null,
         roundDuration: action.payload.roundDuration,
         restDuration: action.payload.restDuration,
+        alarmTime: action.payload.alarmTime,
       };
     }
     default:
@@ -140,8 +148,8 @@ function useSounds(state: State, { bell, knocks }: Refs) {
   if (
     previousState.current.status === "started" &&
     state.status === "started" &&
-    previousTime > DEFAULT.ALARM_TIME &&
-    time <= DEFAULT.ALARM_TIME
+    previousTime > state.alarmTime &&
+    time <= state.alarmTime
   ) {
     knocks.current?.play();
   }
@@ -171,8 +179,11 @@ export function useRoundTimer(refs: Refs) {
     dispatch({ type: "RESET" });
   }, []);
   const updateSettings = useCallback(
-    (roundDuration: number, restDuration: number) => {
-      dispatch({ type: "UPDATE", payload: { roundDuration, restDuration } });
+    (roundDuration: number, restDuration: number, alarmTime: number) => {
+      dispatch({
+        type: "UPDATE",
+        payload: { roundDuration, restDuration, alarmTime },
+      });
     },
     []
   );
@@ -186,6 +197,7 @@ export function useRoundTimer(refs: Refs) {
     currentRound,
     roundDuration: state.roundDuration,
     restDuration: state.restDuration,
+    alarmTime: state.alarmTime,
     startTimer,
     pauseTimer,
     resetTimer,

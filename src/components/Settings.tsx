@@ -1,43 +1,80 @@
-import React from "react";
+import { useReducer, type FormEvent } from "react";
 import { Button } from "./ui/button";
 import { Label } from "./ui/label";
 import { Plus, Minus } from "lucide-react";
 
+type State = {
+  roundDuration: number;
+  restDuration: number;
+  alarmTime: number;
+};
+
+type Action =
+  | { type: "INCREMENT_ROUND" }
+  | { type: "DECREMENT_ROUND" }
+  | { type: "INCREMENT_REST" }
+  | { type: "DECREMENT_REST" }
+  | { type: "INCREMENT_ALARM" }
+  | { type: "DECREMENT_ALARM" };
+
+function adjust(currentTime: number, adjustment: number) {
+  return Math.max(10, currentTime + adjustment);
+}
+
+function reducer(state: State, action: Action): State {
+  switch (action.type) {
+    case "INCREMENT_ROUND":
+      return { ...state, roundDuration: adjust(state.roundDuration, 10_000) };
+    case "DECREMENT_ROUND":
+      return { ...state, roundDuration: adjust(state.roundDuration, -10_000) };
+    case "INCREMENT_REST":
+      return { ...state, restDuration: adjust(state.restDuration, 10_000) };
+    case "DECREMENT_REST":
+      return { ...state, restDuration: adjust(state.restDuration, -10_000) };
+    case "INCREMENT_ALARM":
+      return { ...state, alarmTime: adjust(state.alarmTime, 10_000) };
+    case "DECREMENT_ALARM":
+      return { ...state, alarmTime: adjust(state.alarmTime, -10_000) };
+  }
+  return state;
+}
+
+function formatTimeForDisplay(ms: number) {
+  const minutes = Math.floor(ms / 60_000);
+  const remainingSeconds = Math.floor((ms % 60_000) / 1000);
+  return `${minutes.toString().padStart(2, "0")}:${remainingSeconds
+    .toString()
+    .padStart(2, "0")}`;
+}
+
 interface SettingsProps {
   roundDuration: number;
   restDuration: number;
-  onUpdate: (roundDuration: number, restDuration: number) => void;
+  alarmTime: number;
+  onUpdate: (
+    roundDuration: number,
+    restDuration: number,
+    alarmTime: number
+  ) => void;
   onClose: () => void;
 }
 
 export function Settings({
   roundDuration,
   restDuration,
+  alarmTime,
   onUpdate,
   onClose,
 }: SettingsProps) {
-  const [newRoundDuration, setNewRoundDuration] = React.useState(
-    roundDuration / 1000
-  );
-  const [newRestDuration, setNewRestDuration] = React.useState(
-    restDuration / 1000
-  );
+  const [state, dispatch] = useReducer(reducer, {
+    roundDuration,
+    restDuration,
+    alarmTime,
+  });
 
-  const formatTimeForDisplay = (seconds: number) => {
-    const minutes = Math.floor(seconds / 60);
-    const remainingSeconds = seconds % 60;
-    return `${minutes.toString().padStart(2, "0")}:${remainingSeconds
-      .toString()
-      .padStart(2, "0")}`;
-  };
-
-  const adjustTime = (currentTime: number, adjustment: number) => {
-    return Math.max(10, currentTime + adjustment);
-  };
-
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = (e: FormEvent) => {
     e.preventDefault();
-    onUpdate(newRoundDuration * 1000, newRestDuration * 1000);
+    onUpdate(state.roundDuration, state.restDuration, state.alarmTime);
     onClose();
   };
 
@@ -53,22 +90,18 @@ export function Settings({
                 type="button"
                 variant="outline"
                 size="icon"
-                onClick={() =>
-                  setNewRoundDuration((time) => adjustTime(time, -10))
-                }
+                onClick={() => dispatch({ type: "DECREMENT_ROUND" })}
               >
                 <Minus className="h-4 w-4" />
               </Button>
               <span className="text-2xl font-mono">
-                {formatTimeForDisplay(newRoundDuration)}
+                {formatTimeForDisplay(state.roundDuration)}
               </span>
               <Button
                 type="button"
                 variant="outline"
                 size="icon"
-                onClick={() =>
-                  setNewRoundDuration((time) => adjustTime(time, 10))
-                }
+                onClick={() => dispatch({ type: "INCREMENT_ROUND" })}
               >
                 <Plus className="h-4 w-4" />
               </Button>
@@ -81,22 +114,42 @@ export function Settings({
                 type="button"
                 variant="outline"
                 size="icon"
-                onClick={() =>
-                  setNewRestDuration((time) => adjustTime(time, -10))
-                }
+                onClick={() => dispatch({ type: "DECREMENT_REST" })}
               >
                 <Minus className="h-4 w-4" />
               </Button>
               <span className="text-2xl font-mono">
-                {formatTimeForDisplay(newRestDuration)}
+                {formatTimeForDisplay(state.restDuration)}
               </span>
               <Button
                 type="button"
                 variant="outline"
                 size="icon"
-                onClick={() =>
-                  setNewRestDuration((time) => adjustTime(time, 10))
-                }
+                onClick={() => dispatch({ type: "INCREMENT_REST" })}
+              >
+                <Plus className="h-4 w-4" />
+              </Button>
+            </div>
+          </div>
+          <div className="mb-4">
+            <Label htmlFor="restDuration">Alarm Time (MM:SS)</Label>
+            <div className="flex items-center justify-between mt-2">
+              <Button
+                type="button"
+                variant="outline"
+                size="icon"
+                onClick={() => dispatch({ type: "DECREMENT_ALARM" })}
+              >
+                <Minus className="h-4 w-4" />
+              </Button>
+              <span className="text-2xl font-mono">
+                {formatTimeForDisplay(state.alarmTime)}
+              </span>
+              <Button
+                type="button"
+                variant="outline"
+                size="icon"
+                onClick={() => dispatch({ type: "INCREMENT_ALARM" })}
               >
                 <Plus className="h-4 w-4" />
               </Button>

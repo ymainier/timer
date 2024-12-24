@@ -16,6 +16,7 @@ function App() {
     status,
     currentRound,
     roundDuration,
+    alarmTime,
     restDuration,
     startTimer,
     pauseTimer,
@@ -82,6 +83,7 @@ function App() {
         <Settings
           roundDuration={roundDuration}
           restDuration={restDuration}
+          alarmTime={alarmTime}
           onUpdate={updateSettings}
           onClose={() => setShowSettings(false)}
         />
