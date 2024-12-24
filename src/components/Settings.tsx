@@ -18,7 +18,7 @@ type Action =
   | { type: "DECREMENT_ALARM" };
 
 function adjust(currentTime: number, adjustment: number) {
-  return Math.max(10, currentTime + adjustment);
+  return Math.max(10_000, currentTime + adjustment);
 }
 
 function reducer(state: State, action: Action): State {
@@ -35,8 +35,9 @@ function reducer(state: State, action: Action): State {
       return { ...state, alarmTime: adjust(state.alarmTime, 10_000) };
     case "DECREMENT_ALARM":
       return { ...state, alarmTime: adjust(state.alarmTime, -10_000) };
+    default:
+      return state;
   }
-  return state;
 }
 
 function formatTimeForDisplay(ms: number) {
@@ -80,7 +81,7 @@ export function Settings({
 
   return (
     <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center p-4">
-      <div className="bg-white rounded-lg p-6 w-full max-w-md">
+      <div className="bg-white text-foreground rounded-lg p-6 w-full max-w-md">
         <h2 className="text-2xl font-bold mb-4">Settings</h2>
         <form onSubmit={handleSubmit}>
           <div className="mb-4">

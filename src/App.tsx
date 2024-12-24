@@ -45,7 +45,7 @@ function App() {
 
   return (
     <div
-      className={`flex flex-col justify-between min-h-screen ${getBackgroundColor()} transition-colors duration-300`}
+      className={`flex flex-col justify-between min-h-svh ${getBackgroundColor()} transition-colors duration-300`}
     >
       <div className="flex-grow flex items-center justify-center p-4">
         <div className="text-center">
@@ -53,7 +53,7 @@ function App() {
             {isRound ? "Round" : "Rest"} {currentRound}
           </h1>
           <div
-            className="font-mono font-bold text-[20vw] leading-none"
+            className="font-mono font-bold text-[15vw] leading-none"
             aria-live="polite"
           >
             {time}
