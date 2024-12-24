@@ -12,7 +12,8 @@ function App() {
 
   const {
     time,
-    isRound,
+    formattedRoundDuration,
+    mode,
     status,
     currentRound,
     roundDuration,
@@ -29,13 +30,13 @@ function App() {
   const getBackgroundColor = () => {
     switch (status) {
       case "paused":
-        return isRound
+        return mode === "round"
           ? "bg-gray-300 text-foreground"
           : "bg-gray-700 text-white";
       case "stopped":
         return "bg-background text-foreground";
       default:
-        return isRound
+        return mode === "round"
           ? "bg-background text-foreground"
           : "bg-black text-white";
     }
@@ -43,20 +44,23 @@ function App() {
 
   const isRunning = status === "started";
 
+  const title =
+    mode === "preparation"
+      ? "Preparation"
+      : `${mode === "round" ? "Round" : "Rest"} ${currentRound}`;
+
   return (
     <div
       className={`flex flex-col justify-between min-h-svh ${getBackgroundColor()} transition-colors duration-300`}
     >
       <div className="flex-grow flex items-center justify-center p-4">
         <div className="text-center">
-          <h1 className="text-2xl font-bold mb-4">
-            {isRound ? "Round" : "Rest"} {currentRound}
-          </h1>
+          <h1 className="text-2xl font-bold mb-4">{status === "stopped" ? "Round" : title}</h1>
           <div
             className="font-mono font-bold text-[15vw] leading-none"
             aria-live="polite"
           >
-            {time}
+            {status === "stopped" ? formattedRoundDuration : time}
           </div>
         </div>
       </div>

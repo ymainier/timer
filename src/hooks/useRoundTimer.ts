@@ -5,6 +5,7 @@ export type State =
       status: "stopped";
       duration: null;
       lastTick: null;
+      preparationDuration: number;
       roundDuration: number;
       restDuration: number;
       alarmTime: number;
@@ -13,12 +14,14 @@ export type State =
       status: "started" | "paused";
       duration: number;
       lastTick: number;
+      preparationDuration: number;
       roundDuration: number;
       restDuration: number;
       alarmTime: number;
     };
 
 const DEFAULT = Object.freeze({
+  PREPARATION_DURATION: 10_000,
   ROUND_DURATION: 180_000,
   REST_DURATION: 60_000,
   ALARM_TIME: 30_000,
@@ -28,6 +31,7 @@ export const initialState: State = Object.freeze({
   status: "stopped",
   duration: null,
   lastTick: null,
+  preparationDuration: DEFAULT.PREPARATION_DURATION,
   roundDuration: DEFAULT.ROUND_DURATION,
   restDuration: DEFAULT.REST_DURATION,
   alarmTime: DEFAULT.ALARM_TIME,
@@ -78,6 +82,7 @@ export function reducer(state: State, action: Action): State {
         status: "stopped",
         duration: null,
         lastTick: null,
+        preparationDuration: DEFAULT.PREPARATION_DURATION,
         roundDuration: action.payload.roundDuration,
         restDuration: action.payload.restDuration,
         alarmTime: action.payload.alarmTime,
@@ -96,8 +101,21 @@ const formatTime = (timeInMs: number): string => {
   return `${minutes}:${seconds.toString().padStart(2, "0")}:${tenths}`;
 };
 
-function computeTimeAndRound(state: State) {
-  const duration = state.duration ?? 0;
+type Mode = "preparation" | "round" | "rest";
+function computeModeTimeAndRound(state: State): {
+  mode: Mode;
+  time: number;
+  currentRound: number;
+} {
+  let duration = state.duration ?? 0;
+  if (duration < state.preparationDuration) {
+    return {
+      mode: "preparation",
+      time: state.preparationDuration - duration,
+      currentRound: 0,
+    };
+  }
+  duration = duration - state.preparationDuration;
   const durationModuloRoundPlusRest =
     duration % (state.roundDuration + state.restDuration);
   const isRound = durationModuloRoundPlusRest < state.roundDuration;
@@ -109,7 +127,7 @@ function computeTimeAndRound(state: State) {
   const currentRound =
     Math.floor(duration / (state.roundDuration + state.restDuration)) + 1;
 
-  return { isRound, time, currentRound };
+  return { mode: isRound ? "round" : "rest", time, currentRound };
 }
 
 type Refs = {
@@ -121,14 +139,15 @@ type Refs = {
 function useSounds(state: State, { bell, knocks }: Refs) {
   const previousState = useRef(state);
 
-  const { isRound, time } = computeTimeAndRound(state);
-  const { isRound: previousIsRound, time: previousTime } = computeTimeAndRound(
+  const { mode, time } = computeModeTimeAndRound(state);
+  const { mode: previousMode, time: previousTime } = computeModeTimeAndRound(
     previousState.current
   );
 
   if (
     previousState.current.status === "stopped" &&
-    state.status === "started"
+    state.status === "started" &&
+    mode === "round"
   ) {
     bell.current?.play();
   }
@@ -136,7 +155,7 @@ function useSounds(state: State, { bell, knocks }: Refs) {
   if (
     previousState.current.status === "started" &&
     state.status === "started" &&
-    previousIsRound !== isRound
+    previousMode !== mode
   ) {
     if (bell.current) {
       bell.current.pause();
@@ -188,13 +207,14 @@ export function useRoundTimer(refs: Refs) {
     []
   );
 
-  const { isRound, time, currentRound } = computeTimeAndRound(state);
+  const { mode, time, currentRound } = computeModeTimeAndRound(state);
 
   return {
     time: formatTime(time),
-    isRound,
+    mode,
     status: state.status,
     currentRound,
+    formattedRoundDuration: formatTime(state.roundDuration),
     roundDuration: state.roundDuration,
     restDuration: state.restDuration,
     alarmTime: state.alarmTime,
