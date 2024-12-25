@@ -136,24 +136,16 @@ type Refs = {
   snap: RefObject<HTMLAudioElement>;
 };
 
-function useSounds(state: State, { bell, knocks }: Refs) {
-  const previousState = useRef(state);
+function useSounds(state: State, { bell, knocks, snap }: Refs) {
+  const previousStateRef = useRef(state);
+  const previousState = previousStateRef.current;
 
   const { mode, time } = computeModeTimeAndRound(state);
-  const { mode: previousMode, time: previousTime } = computeModeTimeAndRound(
-    previousState.current
-  );
+  const { mode: previousMode, time: previousTime } =
+    computeModeTimeAndRound(previousState);
 
   if (
-    previousState.current.status === "stopped" &&
-    state.status === "started" &&
-    mode === "round"
-  ) {
-    bell.current?.play();
-  }
-
-  if (
-    previousState.current.status === "started" &&
+    previousState.status === "started" &&
     state.status === "started" &&
     previousMode !== mode
   ) {
@@ -165,7 +157,7 @@ function useSounds(state: State, { bell, knocks }: Refs) {
   }
 
   if (
-    previousState.current.status === "started" &&
+    previousState.status === "started" &&
     state.status === "started" &&
     previousTime > state.alarmTime &&
     time <= state.alarmTime
@@ -173,7 +165,15 @@ function useSounds(state: State, { bell, knocks }: Refs) {
     knocks.current?.play();
   }
 
-  previousState.current = state;
+  if (
+    mode === "preparation" &&
+    Math.floor(previousTime / 1000) !== Math.floor(time / 1000) &&
+    Math.floor(time / 1000) < 5
+  ) {
+    snap.current?.play();
+  }
+
+  previousStateRef.current = state;
 }
 
 export function useRoundTimer(refs: Refs) {
