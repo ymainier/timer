@@ -1,4 +1,4 @@
-import React, { useRef } from "react";
+import React, { useEffect, useRef } from "react";
 import { useRoundTimer } from "./hooks/useRoundTimer";
 import { Button } from "./components/ui/button";
 import { Settings } from "./components/Settings";
@@ -9,6 +9,33 @@ function App() {
     knocks: useRef<HTMLAudioElement>(null),
     snap: useRef<HTMLAudioElement>(null),
   };
+
+  const wakeLockRef = useRef<WakeLockSentinel | null>(null);
+  useEffect(() => {
+    let isActive = true;
+
+    async function requestWakeLock() {
+      try {
+        const lock = await navigator.wakeLock.request("screen");
+        if (isActive) wakeLockRef.current = lock;
+        console.error("wake lock: acquired", isActive, lock);
+      } catch (err) {
+        console.error("Failed to acquire wake lock:", err);
+      }
+    }
+
+    requestWakeLock();
+
+    return () => {
+      isActive = false;
+      if (wakeLockRef.current) {
+        wakeLockRef.current
+          .release()
+          .catch((err) => console.error("Failed to release wake lock:", err));
+        wakeLockRef.current = null;
+      }
+    };
+  }, []);
 
   const {
     time,
@@ -55,7 +82,9 @@ function App() {
     >
       <div className="flex-grow flex items-center justify-center p-4">
         <div className="text-center">
-          <h1 className="text-2xl font-bold mb-4">{status === "stopped" ? "Round" : title}</h1>
+          <h1 className="text-2xl font-bold mb-4">
+            {status === "stopped" ? "Round" : title}
+          </h1>
           <div
             className="font-mono font-bold text-[15vw] leading-none"
             aria-live="polite"

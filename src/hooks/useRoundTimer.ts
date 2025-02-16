@@ -176,9 +176,48 @@ function useSounds(state: State, { bell, knocks, snap }: Refs) {
   previousStateRef.current = state;
 }
 
+export function useWakeLock(shouldLock: boolean) {
+  const wakeLockRef = useRef<WakeLockSentinel | null>(null);
+
+  const requestWakeLock = useCallback(async () => {
+    if (!("wakeLock" in navigator)) return;
+    try {
+      wakeLockRef.current = await navigator.wakeLock.request("screen");
+    } catch (err) {
+      console.error("Failed to acquire wake lock:", err);
+    }
+  }, []);
+
+  const releaseWakeLock = useCallback(() => {
+    wakeLockRef.current?.release().catch(console.error);
+    wakeLockRef.current = null;
+  }, []);
+
+  useEffect(() => {
+    if (shouldLock) {
+      requestWakeLock();
+    } else {
+      releaseWakeLock();
+    }
+  }, [shouldLock, requestWakeLock, releaseWakeLock]);
+
+  // Reacquire wake lock when the tab becomes visible again
+  useEffect(() => {
+    const handleVisibilityChange = () => {
+      if (document.visibilityState === "visible" && shouldLock) {
+        requestWakeLock();
+      }
+    };
+    document.addEventListener("visibilitychange", handleVisibilityChange);
+    return () =>
+      document.removeEventListener("visibilitychange", handleVisibilityChange);
+  }, [shouldLock, requestWakeLock]);
+}
+
 export function useRoundTimer(refs: Refs) {
   const [state, dispatch] = useReducer(reducer, initialState);
   useSounds(state, refs);
+  useWakeLock(state.status === "started" || state.status === "paused");
 
   useEffect(() => {
     const interval = setInterval(() => {
