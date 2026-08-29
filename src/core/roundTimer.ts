@@ -1,3 +1,5 @@
+import type { RoundConfig } from "./roundConfig";
+
 export type State =
   | {
       status: "stopped";
@@ -40,14 +42,7 @@ export type Action =
   | { type: "PAUSE" }
   | { type: "RESET" }
   | { type: "TICK"; payload: number }
-  | {
-      type: "UPDATE";
-      payload: {
-        roundDuration: number;
-        restDuration: number;
-        alarmTime: number;
-      };
-    };
+  | { type: "UPDATE"; payload: RoundConfig };
 
 export function reducer(state: State, action: Action): State {
   switch (action.type) {
@@ -80,7 +75,7 @@ export function reducer(state: State, action: Action): State {
         status: "stopped",
         duration: null,
         lastTick: null,
-        preparationDuration: DEFAULT.PREPARATION_DURATION,
+        preparationDuration: state.preparationDuration,
         roundDuration: action.payload.roundDuration,
         restDuration: action.payload.restDuration,
         alarmTime: action.payload.alarmTime,

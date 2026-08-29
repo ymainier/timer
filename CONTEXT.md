@@ -27,3 +27,7 @@ _Avoid_: warning, buzzer.
 **Cue**:
 A reason for a sound to fire, named in the timer's own terms rather than by which audio file plays — a Phase change, entering the Alarm window, or a Preparation tick.
 _Avoid_: sound, alert, trigger.
+
+**Config**:
+The athlete-adjustable durations of a session — Round, Rest, and Alarm — excluding the fixed Preparation.
+_Avoid_: settings (the UI panel), options, preferences.

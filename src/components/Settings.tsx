@@ -2,39 +2,19 @@ import { useReducer, type FormEvent } from "react";
 import { Button } from "./ui/button";
 import { Label } from "./ui/label";
 import { Plus, Minus } from "lucide-react";
+import {
+  adjust,
+  STEP,
+  type RoundConfig,
+  type ConfigField,
+} from "../core/roundConfig";
 
-type State = {
-  roundDuration: number;
-  restDuration: number;
-  alarmTime: number;
-};
+type Action = { type: "ADJUST"; field: ConfigField; delta: number };
 
-type Action =
-  | { type: "INCREMENT_ROUND" }
-  | { type: "DECREMENT_ROUND" }
-  | { type: "INCREMENT_REST" }
-  | { type: "DECREMENT_REST" }
-  | { type: "INCREMENT_ALARM" }
-  | { type: "DECREMENT_ALARM" };
-
-function adjust(currentTime: number, adjustment: number) {
-  return Math.max(10_000, currentTime + adjustment);
-}
-
-function reducer(state: State, action: Action): State {
+function reducer(state: RoundConfig, action: Action): RoundConfig {
   switch (action.type) {
-    case "INCREMENT_ROUND":
-      return { ...state, roundDuration: adjust(state.roundDuration, 10_000) };
-    case "DECREMENT_ROUND":
-      return { ...state, roundDuration: adjust(state.roundDuration, -10_000) };
-    case "INCREMENT_REST":
-      return { ...state, restDuration: adjust(state.restDuration, 10_000) };
-    case "DECREMENT_REST":
-      return { ...state, restDuration: adjust(state.restDuration, -10_000) };
-    case "INCREMENT_ALARM":
-      return { ...state, alarmTime: adjust(state.alarmTime, 10_000) };
-    case "DECREMENT_ALARM":
-      return { ...state, alarmTime: adjust(state.alarmTime, -10_000) };
+    case "ADJUST":
+      return adjust(state, action.field, action.delta);
     default:
       return state;
   }
@@ -52,11 +32,7 @@ interface SettingsProps {
   roundDuration: number;
   restDuration: number;
   alarmTime: number;
-  onUpdate: (
-    roundDuration: number,
-    restDuration: number,
-    alarmTime: number
-  ) => void;
+  onUpdate: (config: RoundConfig) => void;
   onClose: () => void;
 }
 
@@ -75,7 +51,7 @@ export function Settings({
 
   const handleSubmit = (e: FormEvent) => {
     e.preventDefault();
-    onUpdate(state.roundDuration, state.restDuration, state.alarmTime);
+    onUpdate(state);
     onClose();
   };
 
@@ -91,7 +67,9 @@ export function Settings({
                 type="button"
                 variant="outline"
                 size="icon"
-                onClick={() => dispatch({ type: "DECREMENT_ROUND" })}
+                onClick={() =>
+                  dispatch({ type: "ADJUST", field: "roundDuration", delta: -STEP })
+                }
               >
                 <Minus className="h-4 w-4" />
               </Button>
@@ -102,7 +80,9 @@ export function Settings({
                 type="button"
                 variant="outline"
                 size="icon"
-                onClick={() => dispatch({ type: "INCREMENT_ROUND" })}
+                onClick={() =>
+                  dispatch({ type: "ADJUST", field: "roundDuration", delta: STEP })
+                }
               >
                 <Plus className="h-4 w-4" />
               </Button>
@@ -115,7 +95,9 @@ export function Settings({
                 type="button"
                 variant="outline"
                 size="icon"
-                onClick={() => dispatch({ type: "DECREMENT_REST" })}
+                onClick={() =>
+                  dispatch({ type: "ADJUST", field: "restDuration", delta: -STEP })
+                }
               >
                 <Minus className="h-4 w-4" />
               </Button>
@@ -126,7 +108,9 @@ export function Settings({
                 type="button"
                 variant="outline"
                 size="icon"
-                onClick={() => dispatch({ type: "INCREMENT_REST" })}
+                onClick={() =>
+                  dispatch({ type: "ADJUST", field: "restDuration", delta: STEP })
+                }
               >
                 <Plus className="h-4 w-4" />
               </Button>
@@ -139,7 +123,9 @@ export function Settings({
                 type="button"
                 variant="outline"
                 size="icon"
-                onClick={() => dispatch({ type: "DECREMENT_ALARM" })}
+                onClick={() =>
+                  dispatch({ type: "ADJUST", field: "alarmTime", delta: -STEP })
+                }
               >
                 <Minus className="h-4 w-4" />
               </Button>
@@ -150,7 +136,9 @@ export function Settings({
                 type="button"
                 variant="outline"
                 size="icon"
-                onClick={() => dispatch({ type: "INCREMENT_ALARM" })}
+                onClick={() =>
+                  dispatch({ type: "ADJUST", field: "alarmTime", delta: STEP })
+                }
               >
                 <Plus className="h-4 w-4" />
               </Button>

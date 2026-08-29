@@ -1,6 +1,7 @@
 import { useEffect, useCallback, useReducer, useRef, RefObject } from "react";
 import { reducer, initialState, read, type State } from "../core/roundTimer";
 import { soundCues, type Cue } from "../core/soundCues";
+import type { RoundConfig } from "../core/roundConfig";
 
 type Refs = {
   bell: RefObject<HTMLAudioElement>;
@@ -102,15 +103,9 @@ export function useRoundTimer(refs: Refs) {
   const resetTimer = useCallback(() => {
     dispatch({ type: "RESET" });
   }, []);
-  const updateSettings = useCallback(
-    (roundDuration: number, restDuration: number, alarmTime: number) => {
-      dispatch({
-        type: "UPDATE",
-        payload: { roundDuration, restDuration, alarmTime },
-      });
-    },
-    []
-  );
+  const updateSettings = useCallback((config: RoundConfig) => {
+    dispatch({ type: "UPDATE", payload: config });
+  }, []);
 
   const { phase, time, currentRound } = read(state);
 

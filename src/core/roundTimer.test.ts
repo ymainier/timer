@@ -82,6 +82,15 @@ describe("reducer", () => {
     expect(next.alarmTime).toBe(20_000);
     expect(next.preparationDuration).toBe(DEFAULT.PREPARATION_DURATION);
   });
+
+  it("UPDATE carries the current preparation through instead of resetting it", () => {
+    const withCustomPrep: State = { ...runningAt(50_000), preparationDuration: 3_000 };
+    const next = reducer(withCustomPrep, {
+      type: "UPDATE",
+      payload: { roundDuration: 120_000, restDuration: 30_000, alarmTime: 20_000 },
+    });
+    expect(next.preparationDuration).toBe(3_000);
+  });
 });
 
 describe("read — phase math", () => {
