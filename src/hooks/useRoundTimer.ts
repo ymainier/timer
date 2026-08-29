@@ -1,5 +1,6 @@
 import { useEffect, useCallback, useReducer, useRef, RefObject } from "react";
 import { reducer, initialState, read, type State } from "../core/roundTimer";
+import { soundCues, type Cue } from "../core/soundCues";
 
 type Refs = {
   bell: RefObject<HTMLAudioElement>;
@@ -7,43 +8,38 @@ type Refs = {
   snap: RefObject<HTMLAudioElement>;
 };
 
-function useSounds(state: State, { bell, knocks, snap }: Refs) {
-  const previousStateRef = useRef(state);
-  const previousState = previousStateRef.current;
-
-  const { mode, time } = read(state);
-  const { mode: previousMode, time: previousTime } = read(previousState);
-
-  if (
-    previousState.status === "started" &&
-    state.status === "started" &&
-    previousMode !== mode
-  ) {
-    if (bell.current) {
-      bell.current.pause();
-      bell.current.currentTime = 0;
-      bell.current.play();
+/** Playback adapter: turn cues into sounds on the given audio elements. */
+function playCues(cues: Cue[], { bell, knocks, snap }: Refs) {
+  for (const cue of cues) {
+    switch (cue) {
+      case "phase-changed":
+        if (bell.current) {
+          bell.current.pause();
+          bell.current.currentTime = 0;
+          bell.current.play();
+        }
+        break;
+      case "entered-alarm":
+        knocks.current?.play();
+        break;
+      case "prep-countdown":
+        snap.current?.play();
+        break;
     }
   }
+}
 
-  if (
-    previousState.status === "started" &&
-    state.status === "started" &&
-    previousTime > state.alarmTime &&
-    time <= state.alarmTime
-  ) {
-    knocks.current?.play();
-  }
+function useSounds(state: State, refs: Refs) {
+  const previousStateRef = useRef(state);
+  // App rebuilds the `refs` object each render; the inner refs are stable, so
+  // track the latest container without making it an effect dependency.
+  const refsRef = useRef(refs);
+  refsRef.current = refs;
 
-  if (
-    mode === "preparation" &&
-    Math.floor(previousTime / 1000) !== Math.floor(time / 1000) &&
-    Math.floor(time / 1000) < 5
-  ) {
-    snap.current?.play();
-  }
-
-  previousStateRef.current = state;
+  useEffect(() => {
+    playCues(soundCues(previousStateRef.current, state), refsRef.current);
+    previousStateRef.current = state;
+  }, [state]);
 }
 
 export function useWakeLock(shouldLock: boolean) {
