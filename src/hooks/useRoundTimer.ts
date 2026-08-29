@@ -112,11 +112,11 @@ export function useRoundTimer(refs: Refs) {
     []
   );
 
-  const { mode, time, currentRound } = read(state);
+  const { phase, time, currentRound } = read(state);
 
   return {
     time,
-    mode,
+    phase,
     status: state.status,
     currentRound,
     roundDuration: state.roundDuration,

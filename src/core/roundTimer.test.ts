@@ -87,7 +87,7 @@ describe("reducer", () => {
 describe("read — phase math", () => {
   it("stopped state reads as preparation counting down from the prep duration", () => {
     expect(read(initialState)).toEqual({
-      mode: "preparation",
+      phase: "preparation",
       time: DEFAULT.PREPARATION_DURATION,
       currentRound: 0,
     });
@@ -95,7 +95,7 @@ describe("read — phase math", () => {
 
   it("mid-preparation counts down, round 0", () => {
     expect(read(runningAt(4_000))).toEqual({
-      mode: "preparation",
+      phase: "preparation",
       time: 6_000,
       currentRound: 0,
     });
@@ -104,7 +104,7 @@ describe("read — phase math", () => {
   it("just past preparation enters round 1 at full round time", () => {
     // duration == prep (10s) => 0 into round 1
     expect(read(runningAt(10_000))).toEqual({
-      mode: "round",
+      phase: "round",
       time: DEFAULT.ROUND_DURATION,
       currentRound: 1,
     });
@@ -113,7 +113,7 @@ describe("read — phase math", () => {
   it("counts down within round 1", () => {
     // 10s prep + 30s into round => 150s left
     expect(read(runningAt(40_000))).toEqual({
-      mode: "round",
+      phase: "round",
       time: 150_000,
       currentRound: 1,
     });
@@ -122,7 +122,7 @@ describe("read — phase math", () => {
   it("enters rest after the round ends", () => {
     // 10s prep + 180s round => start of rest, 60s left
     expect(read(runningAt(190_000))).toEqual({
-      mode: "rest",
+      phase: "rest",
       time: DEFAULT.REST_DURATION,
       currentRound: 1,
     });
@@ -131,7 +131,7 @@ describe("read — phase math", () => {
   it("wraps into round 2 after the first rest", () => {
     // 10s prep + 180s round + 60s rest => start of round 2
     expect(read(runningAt(250_000))).toEqual({
-      mode: "round",
+      phase: "round",
       time: DEFAULT.ROUND_DURATION,
       currentRound: 2,
     });

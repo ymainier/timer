@@ -91,17 +91,17 @@ export function reducer(state: State, action: Action): State {
   }
 }
 
-export type Mode = "preparation" | "round" | "rest";
+export type Phase = "preparation" | "round" | "rest";
 
 export function read(state: State): {
-  mode: Mode;
+  phase: Phase;
   time: number;
   currentRound: number;
 } {
   let duration = state.duration ?? 0;
   if (duration < state.preparationDuration) {
     return {
-      mode: "preparation",
+      phase: "preparation",
       time: state.preparationDuration - duration,
       currentRound: 0,
     };
@@ -118,5 +118,5 @@ export function read(state: State): {
   const currentRound =
     Math.floor(duration / (state.roundDuration + state.restDuration)) + 1;
 
-  return { mode: isRound ? "round" : "rest", time, currentRound };
+  return { phase: isRound ? "round" : "rest", time, currentRound };
 }

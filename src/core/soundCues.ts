@@ -16,12 +16,12 @@ export type Cue = "phase-changed" | "entered-alarm" | "prep-countdown";
 export function soundCues(prev: State, next: State): Cue[] {
   if (prev.status !== "started" || next.status !== "started") return [];
 
-  const { mode, time } = read(next);
-  const { mode: prevMode, time: prevTime } = read(prev);
+  const { phase, time } = read(next);
+  const { phase: prevPhase, time: prevTime } = read(prev);
 
   const cues: Cue[] = [];
 
-  if (prevMode !== mode) {
+  if (prevPhase !== phase) {
     cues.push("phase-changed");
   }
 
@@ -30,7 +30,7 @@ export function soundCues(prev: State, next: State): Cue[] {
   }
 
   if (
-    mode === "preparation" &&
+    phase === "preparation" &&
     Math.floor(prevTime / 1000) !== Math.floor(time / 1000) &&
     Math.floor(time / 1000) < 5
   ) {

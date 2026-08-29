@@ -13,7 +13,7 @@ function App() {
 
   const {
     time,
-    mode,
+    phase,
     status,
     currentRound,
     roundDuration,
@@ -30,13 +30,13 @@ function App() {
   const getBackgroundColor = () => {
     switch (status) {
       case "paused":
-        return mode === "round"
+        return phase === "round"
           ? "bg-gray-300 text-foreground"
           : "bg-gray-700 text-white";
       case "stopped":
         return "bg-background text-foreground";
       default:
-        return mode === "round"
+        return phase === "round"
           ? "bg-background text-foreground"
           : "bg-black text-white";
     }
@@ -45,9 +45,9 @@ function App() {
   const isRunning = status === "started";
 
   const title =
-    mode === "preparation"
+    phase === "preparation"
       ? "Preparation"
-      : `${mode === "round" ? "Round" : "Rest"} ${currentRound}`;
+      : `${phase === "round" ? "Round" : "Rest"} ${currentRound}`;
 
   return (
     <div
