@@ -1,4 +1,4 @@
-import React, { useEffect, useRef } from "react";
+import React, { useRef } from "react";
 import { useRoundTimer } from "./hooks/useRoundTimer";
 import { formatTime } from "./lib/formatTime";
 import { Button } from "./components/ui/button";
@@ -10,33 +10,6 @@ function App() {
     knocks: useRef<HTMLAudioElement>(null),
     snap: useRef<HTMLAudioElement>(null),
   };
-
-  const wakeLockRef = useRef<WakeLockSentinel | null>(null);
-  useEffect(() => {
-    let isActive = true;
-
-    async function requestWakeLock() {
-      try {
-        const lock = await navigator.wakeLock.request("screen");
-        if (isActive) wakeLockRef.current = lock;
-        console.error("wake lock: acquired", isActive, lock);
-      } catch (err) {
-        console.error("Failed to acquire wake lock:", err);
-      }
-    }
-
-    requestWakeLock();
-
-    return () => {
-      isActive = false;
-      if (wakeLockRef.current) {
-        wakeLockRef.current
-          .release()
-          .catch((err) => console.error("Failed to release wake lock:", err));
-        wakeLockRef.current = null;
-      }
-    };
-  }, []);
 
   const {
     time,
