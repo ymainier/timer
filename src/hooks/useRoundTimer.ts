@@ -4,9 +4,9 @@ import { soundCues, type Cue } from "../core/soundCues";
 import type { RoundConfig } from "../core/roundConfig";
 
 type Refs = {
-  bell: RefObject<HTMLAudioElement>;
-  knocks: RefObject<HTMLAudioElement>;
-  snap: RefObject<HTMLAudioElement>;
+  bell: RefObject<HTMLAudioElement | null>;
+  knocks: RefObject<HTMLAudioElement | null>;
+  snap: RefObject<HTMLAudioElement | null>;
 };
 
 /** Playback adapter: turn cues into sounds on the given audio elements. */

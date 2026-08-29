@@ -53,7 +53,7 @@ function App() {
     <div
       className={`flex flex-col justify-between min-h-svh ${getBackgroundColor()} transition-colors duration-300`}
     >
-      <div className="flex-grow flex items-center justify-center p-4">
+      <div className="grow flex items-center justify-center p-4">
         <div className="text-center">
           <h1 className="text-2xl font-bold mb-4">
             {status === "stopped" ? "Round" : title}

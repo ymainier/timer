@@ -56,7 +56,7 @@ export function Settings({
   };
 
   return (
-    <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center p-4">
+    <div className="fixed inset-0 bg-black/50 flex items-center justify-center p-4">
       <div className="bg-white text-foreground rounded-lg p-6 w-full max-w-md">
         <h2 className="text-2xl font-bold mb-4">Settings</h2>
         <form onSubmit={handleSubmit}>
