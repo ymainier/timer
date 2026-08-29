@@ -1,5 +1,6 @@
 import React, { useEffect, useRef } from "react";
 import { useRoundTimer } from "./hooks/useRoundTimer";
+import { formatTime } from "./lib/formatTime";
 import { Button } from "./components/ui/button";
 import { Settings } from "./components/Settings";
 
@@ -39,7 +40,6 @@ function App() {
 
   const {
     time,
-    formattedRoundDuration,
     mode,
     status,
     currentRound,
@@ -89,7 +89,7 @@ function App() {
             className="font-mono font-bold text-[15vw] leading-none"
             aria-live="polite"
           >
-            {status === "stopped" ? formattedRoundDuration : time}
+            {status === "stopped" ? formatTime(roundDuration) : formatTime(time)}
           </div>
         </div>
       </div>
