@@ -29,5 +29,13 @@ A reason for a sound to fire, named in the timer's own terms rather than by whic
 _Avoid_: sound, alert, trigger.
 
 **Config**:
-The athlete-adjustable durations of a session — Round, Rest, and Alarm — excluding the fixed Preparation.
+The athlete-adjustable durations of a session — Round, Rest, and Alarm — excluding the fixed Preparation. A sibling to the Routine, not a container for it.
 _Avoid_: settings (the UI panel), options, preferences.
+
+**Exercise**:
+The movements for a Round, written as one free-text line within the Routine — a combo, a drill, or several movements the athlete separates however they like. Not a modeled unit: a Round has exactly one line, whatever it names. Rendered with inline markdown — bold and italic only. A label, never a timed sub-interval.
+_Avoid_: move, activity, set.
+
+**Routine**:
+The athlete-authored workout, written as a single markdown list — one line per Round, in order. The first line is Round 1, the next is Round 2, and so on; the list marker and any number are cosmetic (order alone assigns Rounds), and blank lines are not Rounds. Dense by position: once the list runs out, later Rounds are unlabeled. A sibling to Config, not part of it; carries no durations.
+_Avoid_: workout, program, plan, playlist.

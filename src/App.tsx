@@ -3,6 +3,8 @@ import { useRoundTimer } from "./hooks/useRoundTimer";
 import { formatTime } from "./lib/formatTime";
 import { Button } from "./components/ui/button";
 import { Settings } from "./components/Settings";
+import { displayedExercises, type Routine } from "./core/routine";
+import { InlineMarkdown } from "./components/InlineMarkdown";
 
 function App() {
   const refs = {
@@ -26,6 +28,8 @@ function App() {
   } = useRoundTimer(refs);
 
   const [showSettings, setShowSettings] = React.useState(false);
+  const [routine, setRoutine] = React.useState<Routine>("");
+  const { upcoming, exercise } = displayedExercises(routine, phase, currentRound);
 
   const getBackgroundColor = () => {
     switch (status) {
@@ -64,6 +68,18 @@ function App() {
           >
             {status === "stopped" ? formatTime(roundDuration) : formatTime(time)}
           </div>
+          {exercise && (
+            <div className="mt-8">
+              {upcoming && (
+                <div className="text-sm font-semibold uppercase tracking-wide opacity-70">
+                  Next up
+                </div>
+              )}
+              <div className="mt-2 text-2xl">
+                <InlineMarkdown text={exercise} />
+              </div>
+            </div>
+          )}
         </div>
       </div>
       <div className="p-4 flex flex-wrap gap-4 justify-center items-center text-foreground">
@@ -90,7 +106,9 @@ function App() {
           roundDuration={roundDuration}
           restDuration={restDuration}
           alarmTime={alarmTime}
+          routine={routine}
           onUpdate={updateSettings}
+          onRoutineChange={setRoutine}
           onClose={() => setShowSettings(false)}
         />
       )}

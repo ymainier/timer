@@ -1,4 +1,4 @@
-import { useReducer, type FormEvent } from "react";
+import { useReducer, useState, type FormEvent } from "react";
 import { Button } from "./ui/button";
 import { Label } from "./ui/label";
 import { Plus, Minus } from "lucide-react";
@@ -8,6 +8,7 @@ import {
   type RoundConfig,
   type ConfigField,
 } from "../core/roundConfig";
+import type { Routine } from "../core/routine";
 
 type Action = { type: "ADJUST"; field: ConfigField; delta: number };
 
@@ -32,7 +33,9 @@ interface SettingsProps {
   roundDuration: number;
   restDuration: number;
   alarmTime: number;
+  routine: Routine;
   onUpdate: (config: RoundConfig) => void;
+  onRoutineChange: (routine: Routine) => void;
   onClose: () => void;
 }
 
@@ -40,7 +43,9 @@ export function Settings({
   roundDuration,
   restDuration,
   alarmTime,
+  routine,
   onUpdate,
+  onRoutineChange,
   onClose,
 }: SettingsProps) {
   const [state, dispatch] = useReducer(reducer, {
@@ -48,16 +53,19 @@ export function Settings({
     restDuration,
     alarmTime,
   });
+  // Raw Routine text: the whole workout as a markdown list, one line per Round.
+  const [routineText, setRoutineText] = useState<Routine>(routine);
 
   const handleSubmit = (e: FormEvent) => {
     e.preventDefault();
+    onRoutineChange(routineText);
     onUpdate(state);
     onClose();
   };
 
   return (
     <div className="fixed inset-0 bg-black/50 flex items-center justify-center p-4">
-      <div className="bg-white text-foreground rounded-lg p-6 w-full max-w-md">
+      <div className="bg-white text-foreground rounded-lg p-6 w-full max-w-md max-h-[90vh] overflow-y-auto">
         <h2 className="text-2xl font-bold mb-4">Settings</h2>
         <form onSubmit={handleSubmit}>
           <div className="mb-4">
@@ -143,6 +151,17 @@ export function Settings({
                 <Plus className="h-4 w-4" />
               </Button>
             </div>
+          </div>
+          <div className="mb-4">
+            <Label htmlFor="routine">Routine (one round per line)</Label>
+            <textarea
+              id="routine"
+              className="mt-2 w-full rounded-md border border-input p-2 text-sm font-mono"
+              rows={8}
+              placeholder={"1. jab-cross-hook, jab-cross-slip-teep\n2. non-stop kicks"}
+              value={routineText}
+              onChange={(e) => setRoutineText(e.target.value)}
+            />
           </div>
           <div className="flex justify-end space-x-2">
             <Button type="button" variant="outline" onClick={onClose}>
