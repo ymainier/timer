@@ -4,6 +4,7 @@ import { formatTime } from "./lib/formatTime";
 import { Button } from "./components/ui/button";
 import { Settings } from "./components/Settings";
 import { displayedExercises, type Routine } from "./core/routine";
+import { InlineMarkdown } from "./components/InlineMarkdown";
 
 // Temporary seed so the display is demoable before Routine editing exists
 // (ticket 03). Removed once Settings can author a Routine.
@@ -87,7 +88,9 @@ function App() {
               )}
               <ul className="mt-2 space-y-1 text-2xl">
                 {exercises.map((exercise, i) => (
-                  <li key={i}>{exercise}</li>
+                  <li key={i}>
+                    <InlineMarkdown text={exercise} />
+                  </li>
                 ))}
               </ul>
             </div>
