@@ -3,6 +3,15 @@ import { useRoundTimer } from "./hooks/useRoundTimer";
 import { formatTime } from "./lib/formatTime";
 import { Button } from "./components/ui/button";
 import { Settings } from "./components/Settings";
+import { displayedExercises, type Routine } from "./core/routine";
+
+// Temporary seed so the display is demoable before Routine editing exists
+// (ticket 03). Removed once Settings can author a Routine.
+const SEED_ROUTINE: Routine = [
+  ["Jab / cross", "Slip left"],
+  ["Hooks", "Body shots"],
+  ["Uppercuts"],
+];
 
 function App() {
   const refs = {
@@ -26,6 +35,11 @@ function App() {
   } = useRoundTimer(refs);
 
   const [showSettings, setShowSettings] = React.useState(false);
+  const { upcoming, exercises } = displayedExercises(
+    SEED_ROUTINE,
+    phase,
+    currentRound
+  );
 
   const getBackgroundColor = () => {
     switch (status) {
@@ -64,6 +78,20 @@ function App() {
           >
             {status === "stopped" ? formatTime(roundDuration) : formatTime(time)}
           </div>
+          {exercises.length > 0 && (
+            <div className="mt-8">
+              {upcoming && (
+                <div className="text-sm font-semibold uppercase tracking-wide opacity-70">
+                  Next up
+                </div>
+              )}
+              <ul className="mt-2 space-y-1 text-2xl">
+                {exercises.map((exercise, i) => (
+                  <li key={i}>{exercise}</li>
+                ))}
+              </ul>
+            </div>
+          )}
         </div>
       </div>
       <div className="p-4 flex flex-wrap gap-4 justify-center items-center text-foreground">
