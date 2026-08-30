@@ -28,12 +28,8 @@ function App() {
   } = useRoundTimer(refs);
 
   const [showSettings, setShowSettings] = React.useState(false);
-  const [routine, setRoutine] = React.useState<Routine>([]);
-  const { upcoming, exercises } = displayedExercises(
-    routine,
-    phase,
-    currentRound
-  );
+  const [routine, setRoutine] = React.useState<Routine>("");
+  const { upcoming, exercise } = displayedExercises(routine, phase, currentRound);
 
   const getBackgroundColor = () => {
     switch (status) {
@@ -72,20 +68,16 @@ function App() {
           >
             {status === "stopped" ? formatTime(roundDuration) : formatTime(time)}
           </div>
-          {exercises.length > 0 && (
+          {exercise && (
             <div className="mt-8">
               {upcoming && (
                 <div className="text-sm font-semibold uppercase tracking-wide opacity-70">
                   Next up
                 </div>
               )}
-              <ul className="mt-2 space-y-1 text-2xl">
-                {exercises.map((exercise, i) => (
-                  <li key={i}>
-                    <InlineMarkdown text={exercise} />
-                  </li>
-                ))}
-              </ul>
+              <div className="mt-2 text-2xl">
+                <InlineMarkdown text={exercise} />
+              </div>
             </div>
           )}
         </div>

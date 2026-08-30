@@ -1,38 +1,48 @@
 import type { Phase } from "./roundTimer";
 
 /**
- * The athlete-authored Exercises for each Round. Dense and ordered: element 0
- * is Round 1, element 1 is Round 2, and so on. A Round with no Exercises is an
- * empty inner list; Rounds past the end of the array are unlabeled.
- *
- * The Routine is timing-free presentation and deliberately never enters the
- * timer core. See docs/adr/0001-routine-outside-timer-core.md.
+ * The Routine as the athlete authored it: the whole workout as one markdown
+ * list, stored raw. One line per Round, in order. Timing-free presentation
+ * that deliberately never enters the timer core — parsed on demand and looked
+ * up by Round number. See docs/adr/0001-routine-outside-timer-core.md.
  */
-export type Routine = string[][];
+export type Routine = string;
 
-/** The Exercises for a given Round number (1-based). Empty when unset. */
-export function exercisesForRound(routine: Routine, round: number): string[] {
-  if (round < 1) return [];
-  return routine[round - 1] ?? [];
+// A leading ordered (`1.`, `1)`) or unordered (`-`, `*`, `+`) list marker,
+// followed by whitespace or the end of the line. Cosmetic: stripped for
+// display, and the number never assigns Round numbers.
+const MARKER = /^\s*(?:\d+[.)]|[-*+])(?:\s+|$)/;
+
+/**
+ * Split the authored Routine into one line per Round. Blank lines are dropped;
+ * every other line is a Round in order (first line is Round 1). The list marker
+ * is stripped, so a marker-only line yields a blank Round.
+ */
+export function parseRoutine(routine: Routine): string[] {
+  return routine
+    .split("\n")
+    .filter((line) => line.trim() !== "")
+    .map((line) => line.replace(MARKER, "").trim());
 }
 
 /** What the display shows below the countdown, keyed on the timer's phase. */
 export type ExerciseDisplay = {
-  /** True during Rest/Preparation, when the exercises belong to the next Round. */
+  /** True during Rest/Preparation, when the line belongs to the next Round. */
   upcoming: boolean;
-  exercises: string[];
+  exercise: string;
 };
 
 /**
- * During a Round, show that Round's Exercises. During Rest or Preparation,
- * preview the upcoming Round's Exercises (Preparation, with currentRound 0,
- * previews Round 1).
+ * During a Round, show that Round's line. During Rest or Preparation, preview
+ * the upcoming Round's line (Preparation, with currentRound 0, previews Round 1).
  */
 export function displayedExercises(
   routine: Routine,
   phase: Phase,
   currentRound: number
 ): ExerciseDisplay {
+  const lines = parseRoutine(routine);
   const round = phase === "round" ? currentRound : currentRound + 1;
-  return { upcoming: phase !== "round", exercises: exercisesForRound(routine, round) };
+  const exercise = round >= 1 ? lines[round - 1] ?? "" : "";
+  return { upcoming: phase !== "round", exercise };
 }

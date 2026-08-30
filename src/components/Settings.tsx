@@ -1,7 +1,7 @@
 import { useReducer, useState, type FormEvent } from "react";
 import { Button } from "./ui/button";
 import { Label } from "./ui/label";
-import { Plus, Minus, Trash2 } from "lucide-react";
+import { Plus, Minus } from "lucide-react";
 import {
   adjust,
   STEP,
@@ -9,14 +9,6 @@ import {
   type ConfigField,
 } from "../core/roundConfig";
 import type { Routine } from "../core/routine";
-
-/** One line per Exercise; blank lines are dropped. */
-function textToExercises(text: string): string[] {
-  return text
-    .split("\n")
-    .map((line) => line.trim())
-    .filter(Boolean);
-}
 
 type Action = { type: "ADJUST"; field: ConfigField; delta: number };
 
@@ -61,20 +53,12 @@ export function Settings({
     restDuration,
     alarmTime,
   });
-  // One textarea's raw text per Round; converted to Exercises on save.
-  const [rounds, setRounds] = useState<string[]>(() =>
-    routine.map((exercises) => exercises.join("\n"))
-  );
-
-  const setRound = (index: number, text: string) =>
-    setRounds(rounds.map((round, i) => (i === index ? text : round)));
-  const addRound = () => setRounds([...rounds, ""]);
-  const removeRound = (index: number) =>
-    setRounds(rounds.filter((_, i) => i !== index));
+  // Raw Routine text: the whole workout as a markdown list, one line per Round.
+  const [routineText, setRoutineText] = useState<Routine>(routine);
 
   const handleSubmit = (e: FormEvent) => {
     e.preventDefault();
-    onRoutineChange(rounds.map(textToExercises));
+    onRoutineChange(routineText);
     onUpdate(state);
     onClose();
   };
@@ -169,40 +153,15 @@ export function Settings({
             </div>
           </div>
           <div className="mb-4">
-            <Label>Routine (one exercise per line)</Label>
-            <div className="mt-2 space-y-3">
-              {rounds.map((text, index) => (
-                <div key={index}>
-                  <div className="flex items-center justify-between mb-1">
-                    <span className="text-sm font-medium">Round {index + 1}</span>
-                    <Button
-                      type="button"
-                      variant="ghost"
-                      size="icon"
-                      onClick={() => removeRound(index)}
-                      aria-label={`Remove round ${index + 1}`}
-                    >
-                      <Trash2 className="h-4 w-4" />
-                    </Button>
-                  </div>
-                  <textarea
-                    className="w-full rounded-md border border-input p-2 text-sm font-mono"
-                    rows={3}
-                    value={text}
-                    onChange={(e) => setRound(index, e.target.value)}
-                  />
-                </div>
-              ))}
-              <Button
-                type="button"
-                variant="outline"
-                size="sm"
-                onClick={addRound}
-              >
-                <Plus className="h-4 w-4 mr-1" />
-                Add round
-              </Button>
-            </div>
+            <Label htmlFor="routine">Routine (one round per line)</Label>
+            <textarea
+              id="routine"
+              className="mt-2 w-full rounded-md border border-input p-2 text-sm font-mono"
+              rows={8}
+              placeholder={"1. jab-cross-hook, jab-cross-slip-teep\n2. non-stop kicks"}
+              value={routineText}
+              onChange={(e) => setRoutineText(e.target.value)}
+            />
           </div>
           <div className="flex justify-end space-x-2">
             <Button type="button" variant="outline" onClick={onClose}>

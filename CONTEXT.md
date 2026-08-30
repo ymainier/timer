@@ -33,9 +33,9 @@ The athlete-adjustable durations of a session — Round, Rest, and Alarm — exc
 _Avoid_: settings (the UI panel), options, preferences.
 
 **Exercise**:
-A single named movement the athlete authors as one line of text, shown during a Round. Rendered with inline markdown — bold and italic only (no code, links, or block structure). Has no duration or timing of its own; it is a label, never a timed sub-interval.
-_Avoid_: move, activity, drill, set.
+The movements for a Round, written as one free-text line within the Routine — a combo, a drill, or several movements the athlete separates however they like. Not a modeled unit: a Round has exactly one line, whatever it names. Rendered with inline markdown — bold and italic only. A label, never a timed sub-interval.
+_Avoid_: move, activity, set.
 
 **Routine**:
-The athlete-authored, ordered list mapping each Round from 1 to its Exercises. Dense: Rounds 1..N each carry a list of Exercises (possibly empty), and after the last defined Round the Routine runs out, leaving later Rounds unlabeled. A blank Round renders nothing and is valid. A sibling to Config, not part of it; carries no durations.
+The athlete-authored workout, written as a single markdown list — one line per Round, in order. The first line is Round 1, the next is Round 2, and so on; the list marker and any number are cosmetic (order alone assigns Rounds), and blank lines are not Rounds. Dense by position: once the list runs out, later Rounds are unlabeled. A sibling to Config, not part of it; carries no durations.
 _Avoid_: workout, program, plan, playlist.
