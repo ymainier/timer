@@ -6,14 +6,6 @@ import { Settings } from "./components/Settings";
 import { displayedExercises, type Routine } from "./core/routine";
 import { InlineMarkdown } from "./components/InlineMarkdown";
 
-// Temporary seed so the display is demoable before Routine editing exists
-// (ticket 03). Removed once Settings can author a Routine.
-const SEED_ROUTINE: Routine = [
-  ["Jab / cross", "Slip left"],
-  ["Hooks", "Body shots"],
-  ["Uppercuts"],
-];
-
 function App() {
   const refs = {
     bell: useRef<HTMLAudioElement>(null),
@@ -36,8 +28,9 @@ function App() {
   } = useRoundTimer(refs);
 
   const [showSettings, setShowSettings] = React.useState(false);
+  const [routine, setRoutine] = React.useState<Routine>([]);
   const { upcoming, exercises } = displayedExercises(
-    SEED_ROUTINE,
+    routine,
     phase,
     currentRound
   );
@@ -121,7 +114,9 @@ function App() {
           roundDuration={roundDuration}
           restDuration={restDuration}
           alarmTime={alarmTime}
+          routine={routine}
           onUpdate={updateSettings}
+          onRoutineChange={setRoutine}
           onClose={() => setShowSettings(false)}
         />
       )}
